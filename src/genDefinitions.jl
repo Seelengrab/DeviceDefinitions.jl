@@ -311,8 +311,14 @@ function generateProject(name::String, svd_path, parent_dir::String=pwd())
     projName = has_suffix ? name : name*".jl"
     moduleName = has_suffix ? name[begin:end-3] : name
     projdir = joinpath(parent_dir, projName)
+    project_exists = isdir(projdir)
     mkpath(projdir)
     srcpath = joinpath(projdir, "src")
+    if project_exists
+        @warn "Project directory already exists - make sure to bump its version after regenerating!"
+        @info "Removing existing src directory"
+        rm(srcpath; recursive=true)
+    end
     mkpath(srcpath)
     mainModuleFile = joinpath(srcpath, projName)
     open(mainModuleFile, "w") do io
