@@ -254,7 +254,7 @@ function generatePeripheralDefinition(p::Peripheral, path="")
         println(io, "const addressBlockSize = ", p.addressBlock.size)
         println(io)
         header = """
-        using MCUCommon: Register
+        using MCUCommon: @regdef, Read, Write, ReadWrite, ReadWriteOnce
         using ..$(p.name): baseAddress
         """
         for r in p.registers
@@ -266,6 +266,7 @@ end
 
 function generateRegisterDefinition(io::IO, r::Register, prefix::AbstractString, moduleHeader)
      # TODO: do proper expansion of registers with counting things
+    '%' in r.name && @info "Found derived register" Register=r.name
     san_name = replace(r.name, '%' => '_', '[' => '_', ']' => '_')
     println(io, """
     \"\"\"
@@ -273,24 +274,35 @@ function generateRegisterDefinition(io::IO, r::Register, prefix::AbstractString,
 
     $(r.description)
     \"\"\"
-    module $san_name
+    module $(san_name)Mod
     """)
     println(io, moduleHeader)
-    println(io, """
-    const $prefix$san_name = Register{:$san_name, UInt$(r.size)}(baseAddress + $(UInt(r.offset)))
-    const Reg = $prefix$san_name
-    """)
     print(io, """
-    module Fields
+    const regAddress = baseAddress + $(UInt(r.offset))
+    @regdef struct $prefix$san_name(regAddress)
+    """)
 
-    using MCUCommon: Read, Write, ReadWrite, ReadWriteOnce, Field
-    using ..$san_name: Reg\n
+    lastOffset = lastWidth = 0
+    for f in r.fields
+        if lastOffset + lastWidth < f.bitOffset
+            println(io, "\t_:", f.bitOffset - (lastOffset+lastWidth))
+        end
+        println(io, "\t", f.name, ":", f.bitWidth, "::", f.access)
+        lastOffset = f.bitOffset
+        lastWidth = f.bitWidth
+    end
+    if lastOffset + lastWidth < r.size
+        println(io, "\t", "_:", r.size - (lastOffset + lastWidth))
+    end
+
+    println(io, """
+    end
+    const Reg = $prefix$san_name
     """)
     for f in r.fields
         generateFieldDefinition(io, r, f)
     end
-    println(io, "end # Fields")
-    println(io, "end # register\n")
+    println(io, "end # register $san_name\n")
 end
 
 function generateFieldDefinition(io::IO, r::Register, f::Field)
@@ -300,7 +312,7 @@ function generateFieldDefinition(io::IO, r::Register, f::Field)
 
     $(f.description)
     \"\"\"
-    const $(f.name) = Field{Reg, $(f.access), $(f.bitOffset), $(f.bitWidth)}()
+    $(f.name)
     """)
 end
 
@@ -314,30 +326,45 @@ function generateProject(name::String, svd_path, parent_dir::String=pwd())
     project_exists = isdir(projdir)
     mkpath(projdir)
     srcpath = joinpath(projdir, "src")
+    mainModuleFile = joinpath(srcpath, projName)
     if project_exists
         @warn "Project directory already exists - make sure to bump its version after regenerating!"
         @info "Removing existing src directory"
-        rm(srcpath; recursive=true)
+        rm(joinpath(srcpath, "peripherals.jl"))
+        rm(joinpath(srcpath, "peripherals"); recursive=true, force=true)
+        mkpath(srcpath)
+        open(mainModuleFile, "w") do io
+            print(io, """
+            module $moduleName
+
+            # This is an empty module, so Pkg is happy
+
+            end # module
+            """)
+        end
+    else
+        cd(parent_dir) do
+            Pkg.generate(projName)
+        end
     end
-    mkpath(srcpath)
-    mainModuleFile = joinpath(srcpath, projName)
+    # generate the project dir first, so there's no need to precompile all of the definitions
+    Pkg.activate(projdir)
+    Pkg.pkg"add MCUCommon"
+    Pkg.compat("MCUCommon", "0.1.3")
+    open(joinpath(projdir, ".gitignore"), "w") do io
+        println(io, "Manifest.toml")
+    end
+    # write out the definitions
     open(mainModuleFile, "w") do io
         print(io, """
         module $moduleName
 
         using MCUCommon: Register, Field
-        using FieldFlags
 
         include("peripherals.jl")
         
         end # module""")
     end
     generateJuliaDefinitions(srcpath, device)
-    Pkg.activate(projdir)
-    Pkg.offline()
-    Pkg.pkg"add MCUCommon, FieldFlags"
-    open(joinpath(projdir, ".gitignore"), "w") do io
-        println(io, "Manifest.toml")
-    end
     println("Done!")
 end
