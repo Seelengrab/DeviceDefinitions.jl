@@ -100,7 +100,7 @@ function generateRegisterDefinition(io::IO, r::Register, prefix::AbstractString,
     println(io, moduleHeader)
     print(io, """
     const regAddress = baseAddress + $(r.addressOffset)
-    @regdef struct $prefix$(r.name)(regAddress)
+    @regdef struct $prefix$(r.name)$(postfix)Struct(regAddress)
     """)
 
     lastOffset = lastWidth = 0
@@ -121,7 +121,7 @@ function generateRegisterDefinition(io::IO, r::Register, prefix::AbstractString,
 
     println(io, """
     end
-    const Reg = $prefix$(r.name)
+    const Reg = $prefix$(r.name)$(postfix)Struct
     """)
     for f in r.fields
         generateFieldDefinition(io, r, f)

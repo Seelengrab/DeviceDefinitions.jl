@@ -9,7 +9,7 @@ function generateProject(name::String, svd_path, parent_dir::String=pwd())
     mainModuleFile = joinpath(srcpath, projName)
     if project_exists
         @warn "Project directory already exists - make sure to bump its version after regenerating!"
-        @info "Removing existing src directory"
+        @info "Removing existing src/peripherals directory"
         rm(joinpath(srcpath, "peripherals.jl"))
         rm(joinpath(srcpath, "peripherals"); recursive=true, force=true)
         mkpath(srcpath)
@@ -27,10 +27,14 @@ function generateProject(name::String, svd_path, parent_dir::String=pwd())
             Pkg.generate(projName)
         end
     end
+    # Project was generated, copy SVD
+    svd_proj_path = joinpath(srcpath, "SVD")
+    mkpath(svd_proj_path)
+    cp(svd_path, joinpath(svd_proj_path, basename(svd_path)); force=true)
     # generate the project dir first, so there's no need to precompile all of the definitions
     Pkg.activate(projdir)
     Pkg.pkg"add MCUCommon"
-    Pkg.compat("MCUCommon", "0.1.3")
+    Pkg.compat("MCUCommon", "0.1.5")
     open(joinpath(projdir, ".gitignore"), "w") do io
         println(io, "Manifest.toml")
     end
@@ -39,10 +43,16 @@ function generateProject(name::String, svd_path, parent_dir::String=pwd())
         print(io, """
         module $moduleName
 
+        # This project was generated from the SVD file found under `src/SVD`.
+
         #=
+        The following is the original license text of the SVD file.
+        Its license may not necessarily apply to this generated code.
+
         """)
-        show(io, @something device.licenseText Some("No license text found!"))
+        print(io, @something device.licenseText Some("No license text found!"))
         print(io, """
+
         =#
 
         using MCUCommon: Register, Field

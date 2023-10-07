@@ -1,7 +1,7 @@
 using Logging
 
 const descrCleanReplace = r"\\n\n\s+" => "\n\n"
-const escapeUnderscore = r"_" => "\\_"
+const escapeUnderscore = r"_" => raw"\\_"
 const indentListReplace = r"^-"m => "  -"
 
 function toAccess(s::AbstractString)
