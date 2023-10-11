@@ -24,6 +24,13 @@ function tryConstruct(::Type{T}, d) where T
     end
 end
 
+"""
+    readSVD(path)
+
+Ingests a .svd file located at `path`, parsing it into a `Device` struct describing the device from the SVD.
+
+This functions is mostly useful for inspecting an SVD file/Device without generating the corresponding Julia project.
+"""
 function readSVD(path)
     dev = readDevice(read(path, Node))
     deriveObjects!(dev)

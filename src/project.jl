@@ -1,3 +1,13 @@
+"""
+    generateProject(name::String,
+                    svd_path,
+                    parent_dir::String=pwd())
+
+Generate a Julia project from a SVD file located at `svd_path`. The project name will be set to `name` and located under
+`parent_dir`.
+
+If the project directory already exists, the existing generated data is removed and regenerated.
+"""
 function generateProject(name::String, svd_path, parent_dir::String=pwd())
     device = readSVD(svd_path)    
     has_suffix = endswith(name, ".jl")
