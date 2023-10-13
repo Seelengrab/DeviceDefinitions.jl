@@ -1,7 +1,7 @@
 name = "SVD2Julia"
 uuid = "4a92fcbf-4a11-4c6c-89cd-1c2a351acd2e"
 authors = ["Sukera <Seelengrab@users.noreply.github.com>"]
-version = "0.1.2"
+version = "0.1.3"
 
 [deps]
 EnumX = "4e289a0a-7415-4d19-859d-a7e5c4648b56"
@@ -9,3 +9,6 @@ Logging = "56ddb016-857b-54e1-b83d-db4d58db5568"
 MCUCommon = "455ac959-662e-47bc-a1c5-e582af05f21d"
 Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 XML = "72c71f33-b9b6-44de-8c94-c961784809e2"
+
+[compat]
+julia = "1.6"
