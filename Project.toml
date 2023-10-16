@@ -11,4 +11,9 @@ Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 XML = "72c71f33-b9b6-44de-8c94-c961784809e2"
 
 [compat]
+EnumX = "1"
+Logging = "1.6"
+MCUCommon = "0.1.5"
+Pkg = "1.6"
+XML = "0.3.1"
 julia = "1.6"
