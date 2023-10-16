@@ -23,15 +23,8 @@ function generateProject(name::String, svd_path, parent_dir::String=pwd())
         rm(joinpath(srcpath, "peripherals.jl"))
         rm(joinpath(srcpath, "peripherals"); recursive=true, force=true)
         mkpath(srcpath)
-        open(mainModuleFile, "w") do io
-            print(io, """
-            module $moduleName
-
-            # This is an empty module, so Pkg is happy
-
-            end # module
-            """)
-        end
+        # to make sure the precompilation works
+        touch(joinpath(srcpath, "peripherals.jl"))
     else
         cd(parent_dir) do
             Pkg.generate(projName)
@@ -49,7 +42,8 @@ function generateProject(name::String, svd_path, parent_dir::String=pwd())
         println(io, "Manifest.toml")
     end
     # write out the definitions
-    open(mainModuleFile, "w") do io
+    # only create the new module file if this is a new project
+    !project_exists && open(mainModuleFile, "w") do io
         print(io, """
         module $moduleName
 
