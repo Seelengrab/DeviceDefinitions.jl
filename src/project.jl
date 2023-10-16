@@ -37,6 +37,7 @@ function generateProject(name::String, svd_path, parent_dir::String=pwd())
     # generate the project dir first, so there's no need to precompile all of the definitions
     Pkg.activate(projdir)
     Pkg.pkg"add MCUCommon"
+    Pkg.compat("julia", "1.6")
     Pkg.compat("MCUCommon", "0.1.5")
     open(joinpath(projdir, ".gitignore"), "w") do io
         println(io, "Manifest.toml")
