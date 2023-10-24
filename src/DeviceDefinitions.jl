@@ -1,4 +1,4 @@
-module SVD2Julia
+module DeviceDefinitions
 
 using MCUCommon: Access, Read, Write, ReadWrite, ReadWriteOnce, Unknown
 using XML
@@ -11,4 +11,4 @@ include("parsing.jl")
 include("genDefinitions.jl")
 include("project.jl")
 
-end # module SVD2Julia
+end # module DeviceDefinitions

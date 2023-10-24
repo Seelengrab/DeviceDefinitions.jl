@@ -1,17 +1,17 @@
-using SVD2Julia
+using DeviceDefinitions
 using Test
 
 @testset "All Tests" begin
 
 @testset "Basic Example" begin
     svd_path = joinpath(@__DIR__, "example.svd")
-    device = SVD2Julia.readSVD(svd_path)
+    device = DeviceDefinitions.readSVD(svd_path)
     @testset "Read basic example" begin
-        @test device isa SVD2Julia.Device
+        @test device isa DeviceDefinitions.Device
     end
     @testset "Generate Basic Example" begin
         mktempdir() do path
-            SVD2Julia.generateProject("Example", svd_path, path)
+            DeviceDefinitions.generateProject("Example", svd_path, path)
             @test "Example.jl" in readdir(path)
             for (obj, _file) in (("src",false), 
                                  ("Project.toml",true), 
