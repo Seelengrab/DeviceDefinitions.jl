@@ -115,7 +115,14 @@ function generateRegisterDefinition(io::IO, r::Register, prefix::AbstractString,
         lastOffset = first(f.bitRange)
         lastWidth = length(f.bitRange)
     end
+
     rsize = something(r.rpg.size, (;value=0)).value
+    if isempty(fielditr)
+        # special case: mark the whole register as a readable "field"
+        lastWidth = rsize
+        println(io, "\t", r.name, ":", rsize)
+    end
+
     if lastOffset + lastWidth < rsize
         println(io, "\t", "_:", rsize - (lastOffset + lastWidth))
     end
