@@ -246,7 +246,7 @@ struct BitRange
         k = keys(kwargs)
         if :bitOffset in k && :bitWidth in k
             start = parse(Int, kwargs[:bitOffset])
-            stop = start + parse(Int, kwargs[:bitWidth])
+            stop = start + parse(Int, kwargs[:bitWidth]) - 1
             return new(start:stop)
         elseif :lsb in k && :msb in k
             lsb = parse(Int, kwargs[:lsb])
@@ -275,7 +275,7 @@ Base.iterate(br::BitRange, state) = iterate(br.extent, state)
     name::DimableIdentifier
     description::Option{String} = nothing
     bitRange::BitRange
-    access::Access
+    access::Option{Access} = nothing
     modifiedWriteValues::ModifiedWriteValue.T = ModifiedWriteValue.Modify
     writeConstraint::Option{WriteConstraint} = nothing
     readAction::ReadAction.T
@@ -290,7 +290,7 @@ function Base.show(io::IO, ::MIME"text/plain", f::Field)
     println(io, indent, "description: ",         @something f.description     Some(nothing))
     println(io, indent, "derivedFrom: ",         @something f.derivedFrom     Some(nothing))
     println(io, indent, "bitRange: ",            @something f.bitRange        Some(nothing))
-    println(io, indent, "access: ",                         f.access                       )
+    println(io, indent, "access: ",              @something f.access          Some(nothing))
     println(io, indent, "modifiedWriteValues: ",            f.modifiedWriteValues          )
     println(io, indent, "writeConstraint: ",     @something f.writeConstraint Some(nothing))
     println(io, indent, "readAction: ",                     f.readAction                   )

@@ -585,6 +585,11 @@ function deriveObjects!(f::Field, r::Register)
         f.derivedFrom = Some(parent.name)
         f.parent = Some(parent)
     end
+
+    if !isnothing(r.rpg)
+        rpg = something(r.rpg)
+        f.access = @something f.access rpg.access
+    end
 end
 
 # expands the peripherals in this device

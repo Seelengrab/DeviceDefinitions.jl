@@ -110,7 +110,8 @@ function generateRegisterDefinition(io::IO, r::Register, prefix::AbstractString,
         if lastOffset + lastWidth < first(f.bitRange)
             println(io, "\t_:", first(f.bitRange) - (lastOffset+lastWidth))
         end
-        println(io, "\t", f.name, ":", length(f.bitRange), "::", f.access)
+        isnothing(f.access) && throw(ArgumentError("Field `$(f.name)` in register `$(r.name)` doesn't have an access modifier!"))
+        println(io, "\t", f.name, ":", length(f.bitRange), "::", @something f.access Some(ReadWrite))
         lastOffset = first(f.bitRange)
         lastWidth = length(f.bitRange)
     end
