@@ -20,11 +20,18 @@ function generateProject(name::String, svd_path, parent_dir::String=pwd())
     if project_exists
         @warn "Project directory already exists - make sure to bump its version after regenerating!"
         @info "Removing existing src/peripherals directory"
-        rm(joinpath(srcpath, "peripherals.jl"))
+        rm(joinpath(srcpath, "peripherals.jl"); force=true)
         rm(joinpath(srcpath, "peripherals"); recursive=true, force=true)
         mkpath(srcpath)
         # to make sure the precompilation works
-        touch(joinpath(srcpath, "peripherals.jl"))
+        open(joinpath(srcpath, "peripherals.jl"), "w") do io
+            println(io,
+            """
+            module Peripherals
+
+            end # module
+            """)
+        end
     else
         cd(parent_dir) do
             Pkg.generate(projName)
@@ -39,7 +46,8 @@ function generateProject(name::String, svd_path, parent_dir::String=pwd())
     Pkg.pkg"add MCUCommon"
     Pkg.compat("julia", "1.6")
     Pkg.compat("MCUCommon", "0.1.5")
-    open(joinpath(projdir, ".gitignore"), "w") do io
+    # don't overwrite existing .gitignore
+    !project_exists && open(joinpath(projdir, ".gitignore"), "w") do io
         println(io, "Manifest.toml")
     end
     # write out the definitions
